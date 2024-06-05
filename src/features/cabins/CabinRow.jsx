@@ -4,9 +4,9 @@ import PropTypes from "prop-types";
 import { useState } from "react";
 import CreateCabinForm from "./CreateCabinForm";
 import { useDeleteCabin } from "./useDeleteCabin";
+import { useCreateCabin } from "./useCreateCabin";
 import { HiPencil, HiTrash } from "react-icons/hi";
 import { HiSquare2Stack } from "react-icons/hi2";
-import { useCreateCabin } from "./useCreateCabin";
 
 const TableRow = styled.div`
   display: grid;
@@ -14,7 +14,6 @@ const TableRow = styled.div`
   column-gap: 2.4rem;
   align-items: center;
   padding: 1.4rem 2.4rem;
-
   &:not(:last-child) {
     border-bottom: 1px solid var(--color-grey-100);
   }
@@ -49,51 +48,42 @@ const Discount = styled.div`
 
 const CabinRow = ({ cabin }) => {
   const [showForm, setShowForm] = useState(false);
-  const {
-    id: cabinId,
-    name,
-    maxCapacity,
-    regularPrice,
-    discount,
-    image,
-    description,
-  } = cabin;
-
   const { isDeleting, deleteCabin } = useDeleteCabin();
   const { isCreating, createCabin } = useCreateCabin();
 
-  function handleDuplicate() {
+  const handleDuplicate = () => {
     createCabin({
-      name: `Copy of ${name}`,
-      maxCapacity,
-      regularPrice,
-      discount,
-      image,
-      description,
+      name: `Copy of ${cabin.name}`,
+      maxCapacity: cabin.maxCapacity,
+      regularPrice: cabin.regularPrice,
+      discount: cabin.discount,
+      image: cabin.image,
+      description: cabin.description,
     });
-  }
+  };
 
   return (
     <>
       <TableRow>
-        <Img src={image}></Img>
-        <Cabin>{name}</Cabin>
-        <div>Fits up to {maxCapacity} guests</div>
-        <Price>{formatCurrency(regularPrice)}</Price>
-        {discount ? (
-          <Discount>{formatCurrency(discount)}</Discount>
-        ) : (
-          <span>&mdash;</span>
-        )}
+        <Img src={cabin.image} alt={`Cabin named ${cabin.name}`} />
+        <Cabin>{cabin.name}</Cabin>
+        <div>Fits up to {cabin.maxCapacity} guests</div>
+        <Price>{formatCurrency(cabin.regularPrice)}</Price>
+        <Discount>
+          {cabin.discount ? (
+            formatCurrency(cabin.discount)
+          ) : (
+            <span>&mdash;</span>
+          )}
+        </Discount>
         <div>
-          <button disabled={isCreating} onClick={handleDuplicate}>
-            <HiSquare2Stack />
-          </button>
           <button onClick={() => setShowForm((show) => !show)}>
             <HiPencil />
           </button>
-
-          <button onClick={() => deleteCabin(cabinId)} disabled={isDeleting}>
+          <button onClick={handleDuplicate} disabled={isCreating}>
+            <HiSquare2Stack />
+          </button>
+          <button onClick={() => deleteCabin(cabin.id)} disabled={isDeleting}>
             <HiTrash />
           </button>
         </div>
@@ -105,13 +95,13 @@ const CabinRow = ({ cabin }) => {
 
 CabinRow.propTypes = {
   cabin: PropTypes.shape({
+    id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
     maxCapacity: PropTypes.number.isRequired,
     regularPrice: PropTypes.number.isRequired,
-    discount: PropTypes.number.isRequired,
+    discount: PropTypes.number,
     image: PropTypes.string.isRequired,
-    id: PropTypes.number.isRequired,
-    description: PropTypes.string.isRequired,
+    description: PropTypes.string,
   }).isRequired,
 };
 
